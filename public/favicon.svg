@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Fondo naranja con esquinas redondeadas -->
+  <rect width="32" height="32" rx="7" fill="#f97316"/>
+  <!-- Huella de mascota (paw) centrada y escalada a 20x20 dentro del cuadro -->
+  <g transform="translate(6,6) scale(0.0390625)">
+    <path fill="white" d="M96 144c0 35.3 21.5 64 48 64s48-28.7 48-64-21.5-64-48-64-48 28.7-48 64zm224 0c0 35.3 21.5 64 48 64s48-28.7 48-64-21.5-64-48-64-48 28.7-48 64zM48 240c0 26.5 14.3 48 32 48s32-21.5 32-48-14.3-48-32-48-32 21.5-32 48zm352 0c0 26.5 14.3 48 32 48s32-21.5 32-48-14.3-48-32-48-32 21.5-32 48zM256 304c-70.7 0-128 42.9-128 96 0 35.3 28.7 64 64 64h128c35.3 0 64-28.7 64-64 0-53.1-57.3-96-128-96z"/>
+  </g>
+</svg>

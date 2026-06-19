@@ -1,0 +1,132 @@
+import { useState } from 'react'
+import { useCart } from '../context/CartContext'
+
+function PawIcon({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 32 32" fill="currentColor">
+      <ellipse cx="9"    cy="7"    rx="3"   ry="3.8"/>
+      <ellipse cx="16"   cy="6"    rx="2.8" ry="3.4"/>
+      <ellipse cx="5"    cy="13"   rx="2.6" ry="3.2"/>
+      <ellipse cx="20.5" cy="12.5" rx="2.6" ry="3.2"/>
+      <path d="M12.5 12.5c-4.8 0-7.5 3-7.5 6.5 0 2.2 1.8 3.8 7.5 3.8s7.5-1.6 7.5-3.8c0-3.5-2.7-6.5-7.5-6.5z"/>
+    </svg>
+  )
+}
+
+export default function ProductCard({ product, onAdd }) {
+  const [added, setAdded] = useState(false)
+  const { items } = useCart()
+
+  const cartQty   = items.find(i => i.id === product.id)?.quantity ?? 0
+  const outOfStock = product.stock === 0
+  const maxReached = !outOfStock && product.stock !== null && cartQty >= product.stock
+
+  function handleAdd() {
+    if (outOfStock || maxReached) return
+    onAdd(product)
+    setAdded(true)
+    setTimeout(() => setAdded(false), 1500)
+  }
+
+  return (
+    <div className={`group bg-white rounded-2xl overflow-hidden border flex flex-col transition-all duration-200 ${
+      outOfStock
+        ? 'border-arena opacity-90'
+        : 'border-arena hover:border-ambar/50 hover:shadow-[0_4px_20px_rgba(13,59,46,0.10)] cursor-pointer'
+    }`}>
+
+      {/* Imagen */}
+      <div className="relative aspect-square overflow-hidden bg-arena/40">
+        {product.image_url ? (
+          <img
+            src={product.image_url}
+            alt={product.name}
+            className={`w-full h-full object-cover transition-transform duration-300 ${
+              !outOfStock ? 'group-hover:scale-[1.04]' : ''
+            }`}
+            style={outOfStock ? { filter: 'grayscale(1) sepia(0.12)' } : undefined}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <PawIcon className="w-12 h-12 text-jade/30" />
+          </div>
+        )}
+
+        {/* Cinta diagonal "Sin stock" */}
+        {outOfStock && (
+          <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+            <div
+              className="absolute text-center font-semibold uppercase"
+              style={{
+                background: '#E9DFCF',
+                color: 'rgba(31,23,18,0.6)',
+                fontSize: '9px',
+                letterSpacing: '0.12em',
+                padding: '5px 0',
+                width: '140px',
+                top: '22px',
+                left: '-32px',
+                transform: 'rotate(-45deg)',
+              }}
+            >
+              Sin stock
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Info */}
+      <div className="p-3.5 flex flex-col flex-1">
+        {product.categories?.name && (
+          <p className="text-[10px] font-semibold text-jade uppercase tracking-widest mb-1">
+            {product.categories.name}
+          </p>
+        )}
+
+        <h3 className={`text-sm font-semibold leading-snug line-clamp-2 flex-1 ${
+          outOfStock ? 'text-tierra/40' : 'text-tierra'
+        }`}>
+          {product.name}
+        </h3>
+
+        <p className={`font-bold text-[17px] mt-1.5 ${outOfStock ? 'text-tierra/30' : 'text-tierra'}`}>
+          ${Number(product.price).toLocaleString('es-CO', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2,
+          })}
+        </p>
+
+        {!outOfStock && (
+          <button
+            onClick={handleAdd}
+            disabled={maxReached}
+            title={maxReached ? `Stock máximo alcanzado (${product.stock} disponibles)` : undefined}
+            className={`mt-3 w-full py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all duration-200 active:scale-95 ${
+              maxReached
+                ? 'bg-arena text-tierra/40 cursor-not-allowed'
+                : added
+                ? 'bg-jade text-white scale-[0.97]'
+                : 'bg-manglar text-lino hover:bg-manglar/90'
+            }`}
+          >
+            {added ? (
+              <span className="flex items-center justify-center gap-1.5">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                </svg>
+                Listo
+              </span>
+            ) : maxReached ? 'Stock máx.' : (
+              <span className="flex items-center justify-center gap-1.5">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                Agregar
+              </span>
+            )}
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}

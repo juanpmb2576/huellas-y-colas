@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+@theme {
+  --color-manglar: #0D3B2E;
+  --color-ambar:   #F2A935;
+  --color-lino:    #F8F3EB;
+  --color-jade:    #4C9C8A;
+  --color-tierra:  #1F1712;
+  --color-arena:   #E9DFCF;
+  --font-family-fraunces: 'Fraunces', Georgia, serif;
+  --font-family-sans: 'DM Sans', system-ui, sans-serif;
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
