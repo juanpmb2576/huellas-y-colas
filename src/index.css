@@ -1,14 +1,26 @@
 @import "tailwindcss";
 
 @theme {
-  --color-manglar: #0D3B2E;
-  --color-ambar:   #F2A935;
-  --color-lino:    #F8F3EB;
-  --color-jade:    #4C9C8A;
-  --color-tierra:  #1F1712;
-  --color-arena:   #E9DFCF;
-  --font-family-fraunces: 'Fraunces', Georgia, serif;
-  --font-family-sans: 'DM Sans', system-ui, sans-serif;
+  /* ── Petshop — paleta leída desde clinicConfig.theme vía vars inyectadas en main.jsx ─ */
+  /* Mapeo semántico: manglar=primary, ambar=accent, lino=background,
+     jade=secondary, tierra=text, arena=neutral                                          */
+  --color-manglar: var(--hc-primary,    #6B8E6B);
+  --color-ambar:   var(--hc-accent,     #E29578);
+  --color-lino:    var(--hc-background, #FAF3E8);
+  --color-jade:    var(--hc-secondary,  #A8C0A0);
+  --color-tierra:  var(--hc-text,       #332D27);
+  --color-arena:   var(--hc-neutral,    #EDE3D3);
+  --font-family-fraunces: 'Fredoka', system-ui, sans-serif;
+  --font-family-sans: 'Nunito Sans', system-ui, sans-serif;
+
+  /* ── Landing — valores inyectados desde clinicConfig.theme ─ */
+  --color-hc-primary:   var(--hc-primary,    #6B8E6B);
+  --color-hc-accent:    var(--hc-accent,     #E29578);
+  --color-hc-bg:        var(--hc-background, #FAF3E8);
+  --color-hc-secondary: var(--hc-secondary,  #A8C0A0);
+  --color-hc-text:      var(--hc-text,       #332D27);
+  --color-hc-neutral:   var(--hc-neutral,    #EDE3D3);
+  /* font-display y font-body se inyectan desde main.jsx para que lean clinicConfig.theme */
 }
 
 .no-scrollbar::-webkit-scrollbar { display: none; }

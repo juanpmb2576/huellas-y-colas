@@ -3,6 +3,7 @@ import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useCart } from '../context/CartContext'
 import { paymentProvider } from '../../lib/payments'
+import { clinicConfig } from '../../clinicConfig'
 
 export default function CheckoutPage() {
   const { items, total } = useCart()
@@ -175,7 +176,7 @@ export default function CheckoutPage() {
                 className="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-lg outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition resize-none"
                 placeholder={"Calle 30 #45-67, El Cabrero\nCartagena, Bolívar"}
               />
-              <p className="text-xs text-gray-400">Barrio y ciudad para coordinar el envío en Cartagena.</p>
+              <p className="text-xs text-gray-400">Barrio y ciudad para coordinar el envío en {clinicConfig.address.city.split(',')[0]}.</p>
             </div>
 
             <button

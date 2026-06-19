@@ -29,14 +29,17 @@ export default function ProductCard({ product, onAdd }) {
   }
 
   return (
-    <div className={`group bg-white rounded-2xl overflow-hidden border flex flex-col transition-all duration-200 ${
+    <div className={`group bg-white rounded-3xl overflow-hidden border flex flex-col transition-all duration-200 shadow-sm ${
       outOfStock
-        ? 'border-arena opacity-90'
-        : 'border-arena hover:border-ambar/50 hover:shadow-[0_4px_20px_rgba(13,59,46,0.10)] cursor-pointer'
+        ? 'border-arena/60 opacity-90'
+        : 'border-arena hover:border-ambar/50 hover:shadow-[0_6px_28px_rgba(0,0,0,0.10)] cursor-pointer'
     }`}>
 
       {/* Imagen */}
       <div className="relative aspect-square overflow-hidden bg-arena/40">
+        {/* Huella decorativa en esquina */}
+        <PawIcon className="absolute top-2 right-2 w-10 h-10 text-manglar/[0.07] pointer-events-none" aria-hidden />
+
         {product.image_url ? (
           <img
             src={product.image_url}
@@ -58,8 +61,8 @@ export default function ProductCard({ product, onAdd }) {
             <div
               className="absolute text-center font-semibold uppercase"
               style={{
-                background: '#E9DFCF',
-                color: 'rgba(31,23,18,0.6)',
+                background: 'var(--color-arena)',
+                color: 'color-mix(in srgb, var(--color-tierra) 60%, transparent)',
                 fontSize: '9px',
                 letterSpacing: '0.12em',
                 padding: '5px 0',

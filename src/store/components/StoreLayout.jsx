@@ -6,7 +6,7 @@ import CartDrawer from './CartDrawer'
 export default function StoreLayout() {
   return (
     <CartProvider>
-      <div className="min-h-screen bg-lino">
+      <div className="min-h-screen bg-lino font-body">
         <Header />
         <CartDrawer />
         <main>

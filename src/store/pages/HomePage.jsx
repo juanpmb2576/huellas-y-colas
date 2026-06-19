@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useCart } from '../context/CartContext'
 import ProductCard from '../components/ProductCard'
 
-// ─── Íconos SVG por categoría ───────────────────────────────
+// ─── Íconos SVG por categoría (reservados para uso interno) ──
+// No se usan en el selector de categorías; la función de detección
+// por keywords permanece intacta para otros usos futuros.
 
 function IconTodos({ className }) {
   return (
@@ -78,22 +80,33 @@ function IconRoedores({ className }) {
   )
 }
 
-function getCategoryIcon(category) {
+function getCategoryIcon(category, className = 'w-4 h-4 shrink-0') {
   const key = (category.slug || category.name || '').toLowerCase()
-  const cls = 'w-4 h-4 shrink-0'
-  if (/perro|dog|canin/.test(key))             return <IconPerros   className={cls} />
-  if (/gato|cat|felin/.test(key))              return <IconGatos    className={cls} />
-  if (/ave|bird|p[aá]jaro|pluma/.test(key))   return <IconAves     className={cls} />
-  if (/pe[cz]|fish|acuario|aqua/.test(key))   return <IconPeces    className={cls} />
-  if (/roedor|hamster|rat[oó]n|conejo/.test(key)) return <IconRoedores className={cls} />
-  return <IconPerros className={cls} />
+  if (/perro|dog|canin/.test(key))                return <IconPerros    className={className} />
+  if (/gato|cat|felin/.test(key))                 return <IconGatos     className={className} />
+  if (/ave|bird|p[aá]jaro|pluma/.test(key))      return <IconAves      className={className} />
+  if (/pe[cz]|fish|acuario|aqua/.test(key))      return <IconPeces     className={className} />
+  if (/roedor|hamster|rat[oó]n|conejo/.test(key)) return <IconRoedores  className={className} />
+  return <IconPerros className={className} />
 }
 
-// ─── Skeleton card para loading state ───────────────────────
+function PawDecor({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 32 32" fill="currentColor" aria-hidden>
+      <ellipse cx="9"    cy="7"    rx="3"   ry="3.8"/>
+      <ellipse cx="16"   cy="6"    rx="2.8" ry="3.4"/>
+      <ellipse cx="5"    cy="13"   rx="2.6" ry="3.2"/>
+      <ellipse cx="20.5" cy="12.5" rx="2.6" ry="3.2"/>
+      <path d="M12.5 12.5c-4.8 0-7.5 3-7.5 6.5 0 2.2 1.8 3.8 7.5 3.8s7.5-1.6 7.5-3.8c0-3.5-2.7-6.5-7.5-6.5z"/>
+    </svg>
+  )
+}
+
+// ─── Skeleton card ───────────────────────────────────────────
 
 function SkeletonCard() {
   return (
-    <div className="bg-white rounded-2xl overflow-hidden border border-arena">
+    <div className="bg-white rounded-3xl overflow-hidden border border-arena shadow-sm">
       <div className="aspect-square bg-arena animate-pulse" />
       <div className="p-3.5 space-y-2.5">
         <div className="h-3.5 bg-arena rounded animate-pulse" />
@@ -105,11 +118,85 @@ function SkeletonCard() {
   )
 }
 
+// ─── Estado vacío ────────────────────────────────────────────
+
+function EmptyState({ catName, onReset }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-24 gap-5 text-center">
+      <div className="relative flex items-center justify-center">
+        <div className="absolute w-40 h-40 rounded-full bg-hc-secondary/25 blur-2xl" aria-hidden/>
+        <PawDecor className="relative w-24 h-24 text-manglar/20"/>
+      </div>
+      <div>
+        <p className="font-fraunces italic text-xl text-manglar/45">
+          {catName ? `Nada en ${catName} por ahora.` : 'Sin productos disponibles.'}
+        </p>
+        {onReset && (
+          <button
+            onClick={onReset}
+            className="mt-3 text-sm text-jade hover:text-jade/70 font-medium transition-colors"
+          >
+            Ver todas las categorías →
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─── Estantería horizontal por categoría ─────────────────────
+
+function Shelf({ category, products, onViewAll, onAdd }) {
+  return (
+    <section className="mb-10">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-fraunces text-xl sm:text-2xl text-tierra font-semibold">
+          {category.name}
+        </h2>
+        <button
+          onClick={() => onViewAll(category)}
+          className="text-sm font-medium text-manglar hover:text-manglar/65 transition-colors shrink-0 ml-4"
+        >
+          Ver todos →
+        </button>
+      </div>
+      <div className="flex gap-3 sm:gap-4 overflow-x-auto no-scrollbar pb-3 -mx-4 px-4 sm:mx-0 sm:px-0">
+        {products.map(product => (
+          <div key={product.id} className="w-[168px] sm:w-[192px] shrink-0">
+            <ProductCard product={product} onAdd={onAdd} />
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+// ─── Skeleton de estanterías ─────────────────────────────────
+
+function ShelfSkeleton() {
+  return (
+    <div className="mb-10">
+      <div className="flex items-center justify-between mb-4">
+        <div className="h-7 w-32 bg-arena rounded-lg animate-pulse"/>
+        <div className="h-4 w-16 bg-arena/60 rounded animate-pulse"/>
+      </div>
+      <div className="flex gap-3 sm:gap-4 overflow-x-auto no-scrollbar pb-3">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="w-[168px] sm:w-[192px] shrink-0">
+            <SkeletonCard />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ─── Página principal ────────────────────────────────────────
 
 export default function HomePage() {
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
+  // null = vista de estanterías; objeto {id,name,slug} = grid filtrado de esa categoría
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [loading, setLoading] = useState(true)
   const { addItem } = useCart()
@@ -132,92 +219,109 @@ export default function HomePage() {
     fetchData()
   }, [])
 
-  const filtered = selectedCategory
-    ? products.filter(p => p.category_id === selectedCategory)
-    : products
+  // Estanterías: una por categoría, omitir vacías
+  const shelfData = useMemo(
+    () =>
+      categories
+        .map(cat => ({ ...cat, products: products.filter(p => p.category_id === cat.id) }))
+        .filter(shelf => shelf.products.length > 0),
+    [categories, products]
+  )
 
-  const selectedCat = categories.find(c => c.id === selectedCategory)
+  // Productos del grid filtrado
+  const filteredProducts = selectedCategory
+    ? products.filter(p => p.category_id === selectedCategory.id)
+    : []
 
   return (
     <>
-      {/* Tagline */}
-      <div className="border-b border-arena">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 text-center">
-          <p className="font-fraunces italic text-xl sm:text-2xl text-manglar">
+      {/* Banner con decoración de marca */}
+      <div className="relative bg-manglar overflow-hidden">
+        <div aria-hidden className="absolute inset-0 pointer-events-none">
+          <div className="absolute -right-20 -top-20 w-72 h-72 rounded-full bg-white/[0.04]"/>
+          <div className="absolute -left-12 -bottom-12 w-52 h-52 rounded-full bg-hc-secondary/20"/>
+          <PawDecor className="absolute right-10 bottom-8 w-28 h-28 text-white/[0.06] rotate-12"/>
+          <PawDecor className="absolute left-6  top-4  w-16 h-16 text-hc-accent/20 -rotate-12"/>
+        </div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-10 text-center">
+          <p className="font-fraunces italic text-2xl sm:text-3xl text-white/90">
             Para los que los tratan como familia.
           </p>
+        </div>
+        <div className="relative h-10 overflow-hidden" aria-hidden>
+          <svg viewBox="0 0 1440 40" className="absolute bottom-0 w-full" preserveAspectRatio="none" fill="var(--hc-background, #FAF3E8)">
+            <path d="M0 40V0c240 26 480 40 720 40S1200 26 1440 0v40H0Z"/>
+          </svg>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
 
-        {/* Chips de categoría */}
-        {categories.length > 0 && (
-          <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-1 no-scrollbar">
+        {/* Selector de categorías — texto dinámico, sin íconos */}
+        {!loading && categories.length > 0 && (
+          <div className="flex items-center gap-2 mb-8 overflow-x-auto no-scrollbar pb-1">
             <button
               onClick={() => setSelectedCategory(null)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap shrink-0 transition-all ${
-                selectedCategory === null
+              className={`px-4 py-1.5 rounded-full text-sm font-semibold whitespace-nowrap shrink-0 transition-all ${
+                !selectedCategory
                   ? 'bg-manglar text-lino'
-                  : 'bg-arena text-tierra hover:bg-manglar/10'
+                  : 'text-tierra/55 hover:text-tierra hover:bg-arena/60'
               }`}
             >
-              <IconTodos className="w-4 h-4 shrink-0" />
               Todos
             </button>
             {categories.map(cat => (
               <button
                 key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap shrink-0 transition-all ${
-                  selectedCategory === cat.id
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-4 py-1.5 rounded-full text-sm font-semibold whitespace-nowrap shrink-0 transition-all ${
+                  selectedCategory?.id === cat.id
                     ? 'bg-manglar text-lino'
-                    : 'bg-arena text-tierra hover:bg-manglar/10'
+                    : 'text-tierra/55 hover:text-tierra hover:bg-arena/60'
                 }`}
               >
-                {getCategoryIcon(cat)}
                 {cat.name}
               </button>
             ))}
           </div>
         )}
 
-        {/* Skeleton loading */}
+        {/* Contenido */}
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-            {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
-          </div>
+          /* Skeleton de estanterías */
+          <>
+            <ShelfSkeleton />
+            <ShelfSkeleton />
+            <ShelfSkeleton />
+          </>
 
-        ) : filtered.length === 0 ? (
-          /* Estado vacío */
-          <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
-            <svg className="w-14 h-14 text-jade/30" viewBox="0 0 32 32" fill="currentColor">
-              <ellipse cx="9"    cy="7"    rx="3"   ry="3.8"/>
-              <ellipse cx="16"   cy="6"    rx="2.8" ry="3.4"/>
-              <ellipse cx="5"    cy="13"   rx="2.6" ry="3.2"/>
-              <ellipse cx="20.5" cy="12.5" rx="2.6" ry="3.2"/>
-              <path d="M12.5 12.5c-4.8 0-7.5 3-7.5 6.5 0 2.2 1.8 3.8 7.5 3.8s7.5-1.6 7.5-3.8c0-3.5-2.7-6.5-7.5-6.5z"/>
-            </svg>
-            <p className="font-fraunces italic text-lg text-manglar/40">
-              {selectedCat ? `Nada en ${selectedCat.name} por ahora.` : 'Sin productos disponibles.'}
-            </p>
-            {selectedCategory && (
-              <button
-                onClick={() => setSelectedCategory(null)}
-                className="text-sm text-jade hover:text-jade/70 font-medium transition-colors"
-              >
-                Ver todos los productos
-              </button>
-            )}
-          </div>
+        ) : selectedCategory ? (
+          /* Grid filtrado por categoría */
+          filteredProducts.length === 0 ? (
+            <EmptyState catName={selectedCategory.name} onReset={() => setSelectedCategory(null)} />
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+              {filteredProducts.map(product => (
+                <ProductCard key={product.id} product={product} onAdd={addItem} />
+              ))}
+            </div>
+          )
 
         ) : (
-          /* Grid */
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-            {filtered.map(product => (
-              <ProductCard key={product.id} product={product} onAdd={addItem} />
-            ))}
-          </div>
+          /* Vista de estanterías */
+          shelfData.length === 0 ? (
+            <EmptyState catName={null} onReset={null} />
+          ) : (
+            shelfData.map(shelf => (
+              <Shelf
+                key={shelf.id}
+                category={shelf}
+                products={shelf.products}
+                onViewAll={setSelectedCategory}
+                onAdd={addItem}
+              />
+            ))
+          )
         )}
 
       </div>

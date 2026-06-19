@@ -77,8 +77,16 @@ create policy "Anyone can create an order"
   on public.orders for insert
   with check (true);
 
-create policy "Authenticated can manage orders"
-  on public.orders for select, update, delete
+create policy "Authenticated can select orders"
+  on public.orders for select
+  using (auth.role() = 'authenticated');
+
+create policy "Authenticated can update orders"
+  on public.orders for update
+  using (auth.role() = 'authenticated');
+
+create policy "Authenticated can delete orders"
+  on public.orders for delete
   using (auth.role() = 'authenticated');
 
 -- ─── Storage — product-images bucket ────────────────────────

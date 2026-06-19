@@ -44,10 +44,10 @@ export default function Header() {
             <PawIcon className="w-8 h-8 text-ambar shrink-0" />
             <div className="min-w-0">
               <p className="font-fraunces font-bold text-white text-[18px] leading-none tracking-tight">
-                Pet Shop
+                {clinicConfig.name}
               </p>
               <p className="text-[11px] text-jade font-medium leading-none mt-1">
-                Cartagena
+                {clinicConfig.address.city.split(',')[0]}
               </p>
             </div>
           </Link>
