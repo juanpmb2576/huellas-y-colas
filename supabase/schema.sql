@@ -31,8 +31,9 @@ create table public.orders (
   id             uuid        primary key default gen_random_uuid(),
   customer_name  text,
   customer_email text,
-  customer_phone text,
-  items          jsonb       not null default '[]',
+  customer_phone   text,
+  shipping_address text,
+  items            jsonb       not null default '[]',
   total          numeric     not null check (total >= 0),
   status         text        not null default 'pending'
                              check (status in ('pending', 'paid', 'cancelled')),
@@ -74,8 +75,16 @@ create policy "Authenticated can manage products"
 
 -- orders: cualquiera puede insertar (checkout), solo admin lee/modifica
 create policy "Anyone can create an order"
-  on public.orders for insert
+  on public.orders
+  for insert
+  to anon
   with check (true);
+
+create policy "Anyone can read an order by id"
+  on public.orders
+  for select
+  to anon
+  using (true);
 
 create policy "Authenticated can select orders"
   on public.orders for select
