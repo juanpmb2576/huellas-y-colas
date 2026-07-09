@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 
@@ -40,24 +40,44 @@ function PawIcon({ className }) {
 
 // ─── Página principal ─────────────────────────────────────────
 
+const POLL_INTERVAL = 30_000 // 30 segundos
+
 export default function OrderTrackingPage() {
   const { id } = useParams()
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [lastUpdated, setLastUpdated] = useState(null) // timestamp del último fetch exitoso
+  const [secondsAgo, setSecondsAgo] = useState(0)
+  const intervalRef = useRef(null)
 
+  async function fetchOrder(isInitial = false) {
+    if (isInitial) setLoading(true)
+    const { data } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle()
+    setOrder(data)
+    setLastUpdated(Date.now())
+    setSecondsAgo(0)
+    if (isInitial) setLoading(false)
+  }
+
+  // Fetch inicial + polling cada 30s
   useEffect(() => {
-    async function fetchOrder() {
-      setLoading(true)
-      const { data } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('id', id)
-        .maybeSingle()
-      setOrder(data)
-      setLoading(false)
-    }
-    fetchOrder()
-  }, [id])
+    fetchOrder(true)
+    intervalRef.current = setInterval(() => fetchOrder(false), POLL_INTERVAL)
+    return () => clearInterval(intervalRef.current)
+  }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Contador de "hace X segundos"
+  useEffect(() => {
+    if (!lastUpdated) return
+    const tick = setInterval(() => {
+      setSecondsAgo(Math.floor((Date.now() - lastUpdated) / 1000))
+    }, 5000)
+    return () => clearInterval(tick)
+  }, [lastUpdated])
 
   if (loading) return <LoadingState />
   if (!order)  return <NotFoundState />
@@ -85,6 +105,11 @@ export default function OrderTrackingPage() {
           #{id}
         </h1>
         <p className="relative text-white/60 text-sm mt-2 font-body">{orderDate}</p>
+        <p className="relative text-white/40 text-[11px] mt-3 font-body">
+          {secondsAgo < 10
+            ? 'Actualizado ahora mismo'
+            : `Actualizado hace ${secondsAgo}s · se actualiza solo cada 30s`}
+        </p>
       </div>
 
       {/* Estado del pedido */}
