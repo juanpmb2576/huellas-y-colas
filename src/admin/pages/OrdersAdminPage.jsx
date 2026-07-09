@@ -91,6 +91,7 @@ export default function OrdersAdminPage() {
   const [expanded,             setExpanded]             = useState(null)
   const [filterStatus,         setFilterStatus]         = useState(null)
   const [searchQuery,          setSearchQuery]          = useState('')
+  const [newOrderNotif,        setNewOrderNotif]        = useState(false)
 
   // Filtro de fecha: preset activo o rango personalizado
   const [datePreset, setDatePreset] = useState('today')
@@ -108,6 +109,23 @@ export default function OrdersAdminPage() {
   }, [])
 
   useEffect(() => { fetchOrders() }, [fetchOrders])
+
+  // Suscripción Realtime — INSERT en orders
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-orders-realtime')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'orders' },
+        (payload) => {
+          setOrders(prev => [payload.new, ...prev])
+          setNewOrderNotif(true)
+        }
+      )
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [])
 
   async function handleStatusChange(id, status) {
     setUpdating(id)
@@ -184,6 +202,23 @@ export default function OrdersAdminPage() {
 
   return (
     <>
+      {/* Notificación de pedido nuevo en tiempo real */}
+      {newOrderNotif && (
+        <div className="flex items-center gap-3 mb-5 px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-xl text-sm text-emerald-800 font-medium">
+          <span className="text-lg leading-none" aria-hidden>🎉</span>
+          <span className="flex-1">¡Nuevo pedido recibido! Ya aparece arriba en la lista.</span>
+          <button
+            onClick={() => setNewOrderNotif(false)}
+            aria-label="Cerrar notificación"
+            className="text-emerald-500 hover:text-emerald-700 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      )}
+
       {/* Encabezado */}
       <div className="mb-5">
         <div className="flex items-start justify-between gap-4 flex-wrap">
