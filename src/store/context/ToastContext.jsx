@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useRef } from 'react'
+import { createContext, useContext, useState, useCallback } from 'react'
 import { useCart } from './CartContext'
 
 const ToastCtx = createContext(null)
@@ -46,6 +46,15 @@ function Toast({ toast, onDismiss }) {
         >
           Ver carrito →
         </button>
+        <button
+          onClick={onDismiss}
+          aria-label="Cerrar"
+          className="shrink-0 text-white/50 hover:text-white transition-colors -mr-1"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
       </div>
     </div>
   )
@@ -53,16 +62,12 @@ function Toast({ toast, onDismiss }) {
 
 export function ToastProvider({ children }) {
   const [toast, setToast] = useState(null)
-  const timerRef = useRef(null)
 
   const showToast = useCallback((product) => {
-    if (timerRef.current) clearTimeout(timerRef.current)
     setToast({ name: product.name, key: Date.now() })
-    timerRef.current = setTimeout(() => setToast(null), 3500)
   }, [])
 
   const dismiss = useCallback(() => {
-    if (timerRef.current) clearTimeout(timerRef.current)
     setToast(null)
   }, [])
 
