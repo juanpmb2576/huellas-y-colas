@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useCart } from '../context/CartContext'
+import { useToast } from '../context/ToastContext'
 
 function PawIcon({ className }) {
   return (
@@ -16,6 +17,7 @@ function PawIcon({ className }) {
 export default function ProductCard({ product, onAdd }) {
   const [added, setAdded] = useState(false)
   const { items } = useCart()
+  const { showToast } = useToast()
 
   const cartQty   = items.find(i => i.id === product.id)?.quantity ?? 0
   const outOfStock = product.stock === 0
@@ -24,6 +26,7 @@ export default function ProductCard({ product, onAdd }) {
   function handleAdd() {
     if (outOfStock || maxReached) return
     onAdd(product)
+    showToast(product)
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
   }
