@@ -13,6 +13,7 @@ export default function CheckoutPage() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', address: '' })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [emailError, setEmailError] = useState('')
 
   // Carrito vacío y no venimos de un pago cancelado → no hay nada que pagar
   if (items.length === 0 && !cancelled) {
@@ -29,6 +30,12 @@ export default function CheckoutPage() {
       setError('El nombre, el teléfono y la dirección son obligatorios.')
       return
     }
+    const emailVal = form.email.trim()
+    if (!emailVal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+      setEmailError('Ingresa un email válido (ej: juan@gmail.com).')
+      return
+    }
+    setEmailError('')
     setSubmitting(true)
     setError('')
 
@@ -37,7 +44,7 @@ export default function CheckoutPage() {
       .from('orders')
       .insert({
         customer_name: form.name.trim(),
-        customer_email: form.email.trim() || null,
+        customer_email: form.email.trim(),
         customer_phone: form.phone.trim() || null,
         shipping_address: form.address.trim(),
         items: items.map(i => ({
@@ -135,17 +142,29 @@ export default function CheckoutPage() {
 
             <div className="space-y-1.5">
               <label className="block text-sm font-medium text-gray-700">
-                Email{' '}
-                <span className="text-gray-400 font-normal">(opcional)</span>
+                Email <span className="text-red-400">*</span>
               </label>
               <input
                 type="email"
                 value={form.email}
-                onChange={e => setField('email', e.target.value)}
+                onChange={e => { setField('email', e.target.value); setEmailError('') }}
+                required
                 autoComplete="email"
-                className="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-lg outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition"
+                className={`w-full px-3.5 py-2.5 text-sm border rounded-lg outline-none focus:ring-2 transition ${
+                  emailError
+                    ? 'border-red-300 focus:border-red-400 focus:ring-red-200/50'
+                    : 'border-gray-300 focus:border-gray-900 focus:ring-gray-900/10'
+                }`}
                 placeholder="juan@ejemplo.com"
               />
+              {emailError && (
+                <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700">
+                  <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                  </svg>
+                  {emailError}
+                </div>
+              )}
             </div>
 
             <div className="space-y-1.5">
