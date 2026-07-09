@@ -37,6 +37,8 @@ create table public.orders (
   total          numeric     not null check (total >= 0),
   status         text        not null default 'pending'
                              check (status in ('pending', 'paid', 'cancelled')),
+  fulfillment_status text    not null default 'pending'
+                             check (fulfillment_status in ('pending', 'shipped', 'delivered')),
   created_at     timestamptz not null default now()
 );
 

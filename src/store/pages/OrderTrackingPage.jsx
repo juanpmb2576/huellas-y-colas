@@ -11,11 +11,11 @@ const PAYMENT_STYLE = {
   cancelled: 'bg-red-50    text-red-700    border border-red-200',
 }
 
-const SHIP_LABEL = { sin_enviar: 'Sin enviar', en_camino: 'En camino', entregado: 'Entregado' }
+const SHIP_LABEL = { pending: 'Sin enviar', shipped: 'En camino', delivered: 'Entregado' }
 const SHIP_STYLE = {
-  sin_enviar: 'bg-gray-100   text-gray-500   border border-gray-200',
-  en_camino:  'bg-blue-50    text-blue-700   border border-blue-200',
-  entregado:  'bg-emerald-50 text-emerald-700 border border-emerald-200',
+  pending:   'bg-gray-100   text-gray-500   border border-gray-200',
+  shipped:   'bg-blue-50    text-blue-700   border border-blue-200',
+  delivered: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
 }
 
 function StatusBadge({ label, style }) {
@@ -83,7 +83,7 @@ export default function OrderTrackingPage() {
   if (!order)  return <NotFoundState />
 
   const paymentStatus  = order.status ?? 'pending'
-  const shipStatus     = order.fulfillment_status ?? 'sin_enviar'
+  const shipStatus     = order.fulfillment_status ?? 'pending'
   const items          = Array.isArray(order.items) ? order.items : []
   const orderDate      = new Date(order.created_at).toLocaleDateString('es-CO', {
     year: 'numeric', month: 'long', day: 'numeric',
@@ -129,7 +129,7 @@ export default function OrderTrackingPage() {
             <p className="text-xs text-tierra/50 font-body mb-1.5">Envío</p>
             <StatusBadge
               label={SHIP_LABEL[shipStatus] ?? shipStatus}
-              style={SHIP_STYLE[shipStatus] ?? SHIP_STYLE.sin_enviar}
+              style={SHIP_STYLE[shipStatus] ?? SHIP_STYLE.pending}
             />
           </div>
         </div>

@@ -9,12 +9,12 @@ const STATUS_STYLES  = {
   cancelled: 'bg-red-50 text-red-700 border border-red-200',
 }
 
-const FULFILLMENT_OPTIONS = ['sin_enviar', 'en_camino', 'entregado']
-const FULFILLMENT_LABELS  = { sin_enviar: 'Sin enviar', en_camino: 'En camino', entregado: 'Entregado' }
+const FULFILLMENT_OPTIONS = ['pending', 'shipped', 'delivered']
+const FULFILLMENT_LABELS  = { pending: 'Sin enviar', shipped: 'En camino', delivered: 'Entregado' }
 const FULFILLMENT_STYLES  = {
-  sin_enviar: 'bg-gray-100 text-gray-500 border border-gray-200',
-  en_camino:  'bg-blue-50 text-blue-700 border border-blue-200',
-  entregado:  'bg-emerald-50 text-emerald-700 border border-emerald-200',
+  pending:   'bg-gray-100 text-gray-500 border border-gray-200',
+  shipped:   'bg-blue-50 text-blue-700 border border-blue-200',
+  delivered: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
 }
 
 const STATUS_TABS = [
@@ -129,15 +129,25 @@ export default function OrdersAdminPage() {
 
   async function handleStatusChange(id, status) {
     setUpdating(id)
-    await supabase.from('orders').update({ status }).eq('id', id)
-    setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o))
+    const { error } = await supabase.from('orders').update({ status }).eq('id', id)
+    if (error) {
+      console.error('Error al actualizar estado de pago:', error)
+      alert('No se pudo guardar el estado de pago. Intenta de nuevo.')
+    } else {
+      setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o))
+    }
     setUpdating(null)
   }
 
   async function handleFulfillmentChange(id, fulfillment_status) {
     setUpdatingFulfillment(id)
-    await supabase.from('orders').update({ fulfillment_status }).eq('id', id)
-    setOrders(prev => prev.map(o => o.id === id ? { ...o, fulfillment_status } : o))
+    const { error } = await supabase.from('orders').update({ fulfillment_status }).eq('id', id)
+    if (error) {
+      console.error('Error al actualizar estado de envío:', error)
+      alert('No se pudo guardar el estado de envío. Intenta de nuevo.')
+    } else {
+      setOrders(prev => prev.map(o => o.id === id ? { ...o, fulfillment_status } : o))
+    }
     setUpdatingFulfillment(null)
   }
 
@@ -416,7 +426,7 @@ export default function OrdersAdminPage() {
                   const items      = Array.isArray(order.items) ? order.items : []
                   const totalUnits = items.reduce((sum, i) => sum + (i.quantity ?? 0), 0)
                   const isExpanded = expanded === order.id
-                  const fulfillment = order.fulfillment_status ?? 'sin_enviar'
+                  const fulfillment = order.fulfillment_status ?? 'pending'
                   const isPaid      = order.status === 'paid'
 
                   return (
