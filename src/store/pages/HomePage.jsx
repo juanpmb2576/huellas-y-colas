@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useCart } from '../context/CartContext'
 import ProductCard from '../components/ProductCard'
@@ -144,59 +144,12 @@ function EmptyState({ catName, onReset }) {
   )
 }
 
-// ─── Estantería horizontal por categoría ─────────────────────
-
-function Shelf({ category, products, onViewAll, onAdd }) {
-  return (
-    <section className="mb-10">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="font-fraunces text-xl sm:text-2xl text-tierra font-semibold">
-          {category.name}
-        </h2>
-        <button
-          onClick={() => onViewAll(category)}
-          className="text-sm font-medium text-manglar hover:text-manglar/65 transition-colors shrink-0 ml-4"
-        >
-          Ver todos →
-        </button>
-      </div>
-      <div className="flex gap-3 sm:gap-4 overflow-x-auto no-scrollbar pb-3 -mx-4 px-4 sm:mx-0 sm:px-0">
-        {products.map(product => (
-          <div key={product.id} className="w-[168px] sm:w-[192px] shrink-0">
-            <ProductCard product={product} onAdd={onAdd} />
-          </div>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-// ─── Skeleton de estanterías ─────────────────────────────────
-
-function ShelfSkeleton() {
-  return (
-    <div className="mb-10">
-      <div className="flex items-center justify-between mb-4">
-        <div className="h-7 w-32 bg-arena rounded-lg animate-pulse"/>
-        <div className="h-4 w-16 bg-arena/60 rounded animate-pulse"/>
-      </div>
-      <div className="flex gap-3 sm:gap-4 overflow-x-auto no-scrollbar pb-3">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="w-[168px] sm:w-[192px] shrink-0">
-            <SkeletonCard />
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 // ─── Página principal ────────────────────────────────────────
 
 export default function HomePage() {
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
-  // null = vista de estanterías; objeto {id,name,slug} = grid filtrado de esa categoría
+  // null = todos los productos; objeto {id,name,slug} = filtrado por categoría
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [loading, setLoading] = useState(true)
   const { addItem } = useCart()
@@ -219,19 +172,9 @@ export default function HomePage() {
     fetchData()
   }, [])
 
-  // Estanterías: una por categoría, omitir vacías
-  const shelfData = useMemo(
-    () =>
-      categories
-        .map(cat => ({ ...cat, products: products.filter(p => p.category_id === cat.id) }))
-        .filter(shelf => shelf.products.length > 0),
-    [categories, products]
-  )
-
-  // Productos del grid filtrado
-  const filteredProducts = selectedCategory
+  const filtered = selectedCategory
     ? products.filter(p => p.category_id === selectedCategory.id)
-    : []
+    : products
 
   return (
     <>
@@ -288,40 +231,22 @@ export default function HomePage() {
 
         {/* Contenido */}
         {loading ? (
-          /* Skeleton de estanterías */
-          <>
-            <ShelfSkeleton />
-            <ShelfSkeleton />
-            <ShelfSkeleton />
-          </>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
+          </div>
 
-        ) : selectedCategory ? (
-          /* Grid filtrado por categoría */
-          filteredProducts.length === 0 ? (
-            <EmptyState catName={selectedCategory.name} onReset={() => setSelectedCategory(null)} />
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-              {filteredProducts.map(product => (
-                <ProductCard key={product.id} product={product} onAdd={addItem} />
-              ))}
-            </div>
-          )
+        ) : filtered.length === 0 ? (
+          <EmptyState
+            catName={selectedCategory?.name ?? null}
+            onReset={selectedCategory ? () => setSelectedCategory(null) : null}
+          />
 
         ) : (
-          /* Vista de estanterías */
-          shelfData.length === 0 ? (
-            <EmptyState catName={null} onReset={null} />
-          ) : (
-            shelfData.map(shelf => (
-              <Shelf
-                key={shelf.id}
-                category={shelf}
-                products={shelf.products}
-                onViewAll={setSelectedCategory}
-                onAdd={addItem}
-              />
-            ))
-          )
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            {filtered.map(product => (
+              <ProductCard key={product.id} product={product} onAdd={addItem} />
+            ))}
+          </div>
         )}
 
       </div>
