@@ -89,11 +89,20 @@ export default function ProductCard({ product, onAdd }) {
           </p>
         )}
 
-        <h3 className={`text-sm font-semibold leading-snug line-clamp-2 flex-1 ${
-          outOfStock ? 'text-tierra/40' : 'text-tierra'
-        }`}>
-          {product.name}
-        </h3>
+        <div className="flex-1">
+          <h3 className={`text-sm font-semibold leading-snug line-clamp-2 ${
+            outOfStock ? 'text-tierra/40' : 'text-tierra'
+          }`}>
+            {product.name}
+          </h3>
+          {product.description && (
+            <p className={`text-xs font-body leading-snug line-clamp-2 mt-0.5 ${
+              outOfStock ? 'text-tierra/25' : 'text-tierra/55'
+            }`}>
+              {product.description}
+            </p>
+          )}
+        </div>
 
         <p className={`font-bold text-[17px] mt-1.5 ${outOfStock ? 'text-tierra/30' : 'text-tierra'}`}>
           ${Number(product.price).toLocaleString('es-CO', {
